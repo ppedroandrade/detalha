@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #f7f7f4;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 78% -5%, rgba(118, 146, 134, 0.1), transparent 30rem),
+    radial-gradient(circle at 10% 100%, rgba(201, 107, 70, 0.055), transparent 26rem),
+    #f7f7f4;
+  color: #172622;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  outline-offset: 3px;
+}
+
+::selection {
+  background: #f8e8df;
+  color: #172622;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(23, 38, 34, 0.2);
+  background-clip: padding-box;
+}
+
+@layer components {
+  .surface-card {
+    @apply border border-slate-200/70 bg-white shadow-card;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.16em] text-brand;
+  }
+
+  .page-title {
+    @apply font-display text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-4xl;
+  }
+}
+
+@media print {
+  aside,
+  header {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  body {
+    background: white;
+  }
+}

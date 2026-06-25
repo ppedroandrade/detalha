@@ -1,0 +1,397 @@
+import type { ApartmentItem, AppData, Environment, ItemStatus } from "./types";
+
+const now = new Date("2026-06-24T12:00:00.000Z").toISOString();
+
+export const seedEnvironments: Environment[] = [
+  { id: "sala", name: "Sala", description: "TV, áudio, games e equipamentos da sala", icon: "living", color: "#B08A5B", createdAt: now },
+  { id: "cozinha", name: "Cozinha", description: "Eletrodomésticos, metais e itens da cozinha", icon: "kitchen", color: "#C96A43", createdAt: now },
+  { id: "lavanderia", name: "Lavanderia", description: "Equipamentos e metais da lavanderia", icon: "laundry", color: "#6B84A8", createdAt: now },
+  { id: "suite-master", name: "Suíte master", description: "Equipamentos e mobiliário da suíte", icon: "bedroom", color: "#A16F78", createdAt: now },
+  { id: "closet", name: "Closet", description: "Equipamentos e itens pessoais do closet", icon: "bedroom", color: "#8A7DA8", createdAt: now },
+  { id: "escritorio", name: "Escritório", description: "Computadores, monitores e equipamentos do escritório", icon: "home", color: "#4D7066", createdAt: now },
+  { id: "gourmet", name: "Área gourmet", description: "Cuba, bebidas e metais da área gourmet", icon: "gourmet", color: "#6F8F84", createdAt: now },
+];
+
+const item = (
+  id: string,
+  environmentId: string,
+  name: string,
+  category: string,
+  status: ItemStatus,
+  extras: Partial<ApartmentItem> = {},
+): ApartmentItem => ({
+  id,
+  environmentId,
+  name,
+  category,
+  brand: "",
+  model: "",
+  productCode: "",
+  quantity: 1,
+  dimensions: "",
+  voltage: "",
+  finish: "",
+  productUrl: "",
+  manualUrl: "",
+  notes: "",
+  status,
+  imageUrl: "",
+  favorite: false,
+  carpentryPending: "",
+  needsElectrical: false,
+  needsPlumbing: false,
+  needsCutout: false,
+  createdAt: now,
+  updatedAt: now,
+  ...extras,
+});
+
+export const seedItems: ApartmentItem[] = [
+  // Sala
+  item("sala-tv", "sala", "TV 65 polegadas", "TV", "Escolhido", {
+    brand: "Samsung",
+    model: "Vision AI TV 65 polegadas Neo QLED 4K QN70F 2025",
+    dimensions: "Com suporte: 1.451,7 × 890,4 × 279,4 mm\nSem suporte: 1.451,7 × 832,2 × 25,7 mm",
+    productUrl: "https://www.samsung.com/br/tvs/qled-tv/qn70f-65-inch-neo-qled-4k-mini-led-smart-tv-qn65qn70fagxzd/",
+    carpentryPending: "Instalação na parede. Suporte tipo VESA 400 × 300 mm não incluso.",
+    needsElectrical: true,
+  }),
+  item("sala-soundbar", "sala", "Soundbar", "Áudio", "Escolhido", {
+    brand: "Samsung",
+    model: "Soundbar Samsung HW-B550",
+    dimensions: "Barra: 860 × 59,4 × 75 mm\nSubwoofer: 184 × 346 × 295 mm",
+    voltage: "Bivolt",
+    productUrl: "https://www.samsung.com/br/audio-devices/soundbar/b550-black-hw-b550-zd/",
+    carpentryPending: "Posicionar abaixo da TV.",
+    needsElectrical: true,
+  }),
+  item("sala-ps5", "sala", "Video game", "Video game", "Escolhido", {
+    brand: "Sony",
+    model: "PlayStation®5 Slim Digital",
+    dimensions: "390 × 92 × 260 mm",
+    voltage: "127V",
+    productUrl: "https://www.amazon.com.br/dp/B0F7Z9F9SD",
+    needsElectrical: true,
+  }),
+  item("sala-base-dualsense", "sala", "Base de carregamento DualSense", "Acessório para video game", "Escolhido", {
+    brand: "Sony",
+    model: "Base de Carregamento do DualSense",
+    dimensions: "49 × 36 × 22 cm; 180 g",
+    voltage: "127V",
+    productUrl: "https://www.amazon.com.br/Base-Carregamento-Do-Dualsense-PlayStation/dp/B09JH4PD8Q",
+    needsElectrical: true,
+  }),
+  item("sala-sofa", "sala", "Sofá", "Móvel", "Escolhido", {
+    brand: "Natuzzi",
+    model: "Laise tem as especificações",
+    notes: "Especificações disponíveis com a Laise.",
+  }),
+  item("sala-robo-aspirador", "sala", "Robô aspirador", "Aspirador", "Escolhido", {
+    brand: "Xiaomi",
+    model: "Xiaomi Robot Vacuum X20+",
+    dimensions: "350 × 350 × 97 mm",
+    voltage: "A definir",
+    productUrl: "https://www.mi.com/global/product/xiaomi-robot-vacuum-x20-plus/specs",
+    carpentryPending: "Posicionar ao lado do móvel abaixo da TV.",
+    needsElectrical: true,
+  }),
+  item("sala-ar-condicionado", "sala", "Ar-condicionado", "Climatização", "Comprado", {
+    model: "Confirmar modelo com o Edinelson",
+    notes: "Já comprado; confirmar o modelo com o Edinelson.",
+    needsElectrical: true,
+  }),
+  item("sala-alimentador-pet", "sala", "Comedouro inteligente para cachorros", "Pet", "Escolhido", {
+    brand: "Xiaomi",
+    model: "Alimentador Wi-Fi Inteligente para Pet 2",
+    quantity: 2,
+    voltage: "Bivolt",
+    productUrl: "https://www.mibrasil.com.br/alimentador-wi-fi-inteligente-para-pet-2-xiaomi-prin-p5559?pp=/146.1420/",
+    needsElectrical: true,
+  }),
+  item("sala-bebedouro-pet", "sala", "Bebedouro inteligente para cachorros", "Pet", "Escolhido", {
+    brand: "Xiaomi",
+    model: "Bebedouro Inteligente para Pet 2",
+    quantity: 2,
+    voltage: "127V",
+    productUrl: "https://www.mibrasil.com.br/bebedouro-inteligente-para-pet-xiaomi-prin-p7656?pp=/146.1420/",
+    needsElectrical: true,
+  }),
+
+  // Cozinha
+  item("cozinha-geladeira", "cozinha", "Geladeira", "Geladeira", "Escolhido", {
+    brand: "Samsung",
+    model: "Geladeira Duplex Inverse Evolution SmartThings RB50 Inox 462L 127V",
+    dimensions: "759 × 1.920 × 711 mm",
+    voltage: "127V",
+    finish: "Inox",
+    productUrl: "https://www.samsung.com/br/refrigerators/bottom-mount-freezer/rb6000d-462l-refined-inox-rb50dg6020s9bz/",
+    needsElectrical: true,
+  }),
+  item("cozinha-microondas", "cozinha", "Forno micro-ondas combinado", "Micro-ondas", "Escolhido", {
+    brand: "De Bacco",
+    model: "Montreal 60 cm",
+    productUrl: "https://debacco.com.br/produto/micro-ondas-combinado-montreal/",
+    notes: "Disponível na lista fornecida pela Laise.",
+    needsElectrical: true,
+    needsCutout: true,
+  }),
+  item("cozinha-cooktop", "cozinha", "Cooktop", "Cooktop", "Escolhido", {
+    brand: "De Bacco",
+    model: "Disponível na lista fornecida pela Laise",
+    dimensions: "582 × 500 mm (L × P)",
+    voltage: "Bivolt",
+    manualUrl: "https://debacco.com.br/wp-content/uploads/2025/12/ficha-tecnica-cooktop-montreal-vidro.pdf",
+    needsElectrical: true,
+    needsCutout: true,
+  }),
+  item("cozinha-coifa", "cozinha", "Coifa", "Coifa", "Escolhido", {
+    model: "Barcelona de parede 60 cm",
+    voltage: "A confirmar",
+    productUrl: "https://debacco.com.br/produto/barcelona-de-parede-60-cm/",
+    notes: "Disponível na lista fornecida pela Laise.",
+    needsElectrical: true,
+  }),
+  item("cozinha-lava-loucas", "cozinha", "Lava-louças", "Lava-louças", "Escolhido", {
+    model: "Disponível na lista fornecida pela Laise",
+    needsElectrical: true,
+    needsPlumbing: true,
+    needsCutout: true,
+  }),
+  item("cozinha-filtro-agua", "cozinha", "Filtro de água", "Filtro de água", "A definir", {
+    model: "A definir",
+    needsElectrical: true,
+    needsPlumbing: true,
+  }),
+  item("cozinha-air-fryer", "cozinha", "Air fryer", "Air fryer", "A definir", {
+    model: "A definir",
+    needsElectrical: true,
+  }),
+  item("cozinha-alexa", "cozinha", "Alexa", "Assistente inteligente", "Escolhido", {
+    brand: "Amazon",
+    model: "Echo Show 11 (2ª geração)",
+    dimensions: "260 × 180 × 130 mm",
+    voltage: "Bivolt",
+    productUrl: "https://www.amazon.com.br/dp/B0DYC2GV1Z?th=1",
+    needsElectrical: true,
+  }),
+  item("cozinha-liquidificador", "cozinha", "Liquidificador", "Liquidificador", "Escolhido", {
+    brand: "Ninja",
+    model: "Ninja Mega Kitchen System BL770, 1500W, jarro de 2,041 L, processador de 1,8 L e 2 copos de 473 ml",
+    voltage: "127V",
+    needsElectrical: true,
+  }),
+  item("cozinha-dosador", "cozinha", "Dosador de detergente", "Dosador", "Escolhido", {
+    brand: "De Bacco",
+    finish: "Inox",
+    productUrl: "https://debacco.com.br/produto/dosador-de-detergente-liquido-inox/",
+    needsCutout: true,
+  }),
+  item("cozinha-cuba", "cozinha", "Cuba", "Cuba", "Escolhido", {
+    brand: "De Bacco",
+    model: "Quadratino 700",
+    productUrl: "https://debacco.com.br/produto/cuba-quadratino-700/",
+    needsPlumbing: true,
+    needsCutout: true,
+  }),
+  item("cozinha-torre-bancada", "cozinha", "Torre de tomada da bancada", "Tomada", "Escolhido", {
+    model: "Torre automática personalizável TR03A",
+    voltage: "1 × 220V e 2 × 127V",
+    productUrl: "https://comprar.caixatomada.com/produto/torre-automatica-sem-inducao-personalizavel-tr03a/",
+    needsElectrical: true,
+    needsCutout: true,
+  }),
+  item("cozinha-torre-ilha", "cozinha", "Torre de tomada da ilha", "Tomada", "Escolhido", {
+    model: "Torre automática personalizável TR03A",
+    voltage: "1 × 220V e 2 × 127V",
+    productUrl: "https://comprar.caixatomada.com/produto/torre-automatica-sem-inducao-personalizavel-tr03a/",
+    needsElectrical: true,
+    needsCutout: true,
+  }),
+  item("cozinha-torneira", "cozinha", "Torneira", "Torneira", "Escolhido", {
+    model: "Misturador 800 monocomando",
+    productUrl: "https://debacco.com.br/produto/misturador-800-monocomando/",
+    notes: "Disponível na lista fornecida pela Laise.",
+    needsPlumbing: true,
+  }),
+
+  // Lavanderia
+  item("lavanderia-lava-seca", "lavanderia", "Lavadora de roupa", "Lava e seca", "Escolhido", {
+    brand: "Samsung",
+    model: "Lava e Seca Smart Digital Inverter WD13T Inox 13 kg",
+    dimensions: "666 × 890 × 697 mm",
+    voltage: "220V",
+    finish: "Inox",
+    productUrl: "https://shop.samsung.com.br/lava-e-seca-wd13t-inox-13-kg/p",
+    needsElectrical: true,
+    needsPlumbing: true,
+  }),
+  item("lavanderia-tanque", "lavanderia", "Tanque", "Tanque", "Escolhido", {
+    model: "Igual ao do Jhonatan",
+    notes: "Laise tem as especificações; informar que é igual ao do Jhonatan.",
+    needsPlumbing: true,
+    needsCutout: true,
+  }),
+  item("lavanderia-torneira", "lavanderia", "Torneira", "Torneira", "A definir", {
+    model: "A definir",
+    needsPlumbing: true,
+  }),
+
+  // Suíte master
+  item("suite-ar-condicionado", "suite-master", "Ar-condicionado", "Climatização", "Escolhido", {
+    brand: "Samsung",
+    model: "Split Samsung Inverter WindFree Connect AI 12.000 BTUs Quente e Frio",
+    voltage: "220V / 60 Hz",
+    productUrl: "https://www.samsung.com/br/air-conditioners/wall-mount/kit-2-air-conditioner-split-inverter-windfree-ai-12000-btus-qf-220v-f-2x12dxfaa/",
+    needsElectrical: true,
+  }),
+  item("suite-tv", "suite-master", "TV", "TV", "Escolhido", {
+    brand: "Samsung",
+    model: "S85F",
+    dimensions: "1.224,6 × 706,2 × 33,9 mm",
+    voltage: "Bivolt",
+    productUrl: "https://www.samsung.com/br/tvs/oled-tv/s85f-55-inch-oled-4k-smart-tv-qn55s85fagxzd/",
+    carpentryPending: "Instalação na parede.",
+    needsElectrical: true,
+  }),
+  item("suite-cama-kira", "suite-master", "Cama Kira", "Cama", "Escolhido"),
+  item("suite-cama-channel", "suite-master", "Cama Channel", "Cama", "Escolhido"),
+
+  // Closet
+  item("closet-ar-condicionado", "closet", "Ar-condicionado", "Climatização", "Escolhido", {
+    brand: "Samsung",
+    model: "Split Samsung Inverter WindFree Connect AI 12.000 BTUs Quente e Frio",
+    voltage: "220V / 60 Hz",
+    productUrl: "https://www.samsung.com/br/air-conditioners/wall-mount/kit-2-air-conditioner-split-inverter-windfree-ai-12000-btus-qf-220v-f-2x12dxfaa/",
+    needsElectrical: true,
+  }),
+  item("closet-mini-geladeira", "closet", "Mini geladeira preta", "Mini geladeira", "Escolhido", {
+    brand: "Océane",
+    model: "Skincare Fridge Océane Edition 4 L",
+    voltage: "Bivolt",
+    finish: "Preto",
+    productUrl: "https://www.oceane.com.br/skincare-fridge-edition---mini-geladeira-preto-ap2001143c001/p",
+    needsElectrical: true,
+  }),
+  item("closet-dyson", "closet", "Secador Dyson", "Modelador de cabelo", "Escolhido", {
+    brand: "Dyson",
+    model: "Dyson Airwrap",
+    dimensions: "27,178 A × 4,064 C × 4,826 L",
+    voltage: "Prever 220V e 127V",
+    productUrl: "https://www.dyson.com/hair-care/hair-stylers/airwrap-id/straight-wavy-amber-silk",
+    carpentryPending: "Colocar tomadas 220V e 127V na gaveta.",
+    needsElectrical: true,
+    needsCutout: true,
+  }),
+  item("closet-babyliss", "closet", "Babyliss", "Modelador de cabelo", "Escolhido", {
+    brand: "Taiff",
+    model: "Modelador Vulcan",
+    voltage: "127V",
+    productUrl: "https://www.taiff.com.br/modelador-vulcan/p",
+    needsElectrical: true,
+  }),
+
+  // Escritório
+  item("escritorio-ar-condicionado", "escritorio", "Ar-condicionado", "Climatização", "Escolhido", {
+    brand: "Samsung",
+    model: "Split Samsung Inverter WindFree Connect AI 12.000 BTUs Quente e Frio",
+    voltage: "220V / 60 Hz",
+    productUrl: "https://www.samsung.com/br/air-conditioners/wall-mount/kit-2-air-conditioner-split-inverter-windfree-ai-12000-btus-qf-220v-f-2x12dxfaa/",
+    needsElectrical: true,
+  }),
+  item("escritorio-gabinetes", "escritorio", "Gabinete", "Computador", "Escolhido", {
+    quantity: 2,
+    voltage: "127V",
+    needsElectrical: true,
+  }),
+  item("escritorio-macbook-m4", "escritorio", "MacBook", "Notebook", "Escolhido", {
+    brand: "Apple",
+    model: "MacBook Pro M4 Pro",
+    voltage: "127V",
+    needsElectrical: true,
+  }),
+  item("escritorio-macbook-m2", "escritorio", "MacBook", "Notebook", "Escolhido", {
+    brand: "Apple",
+    model: "MacBook Pro M2",
+    voltage: "127V",
+    needsElectrical: true,
+  }),
+  item("escritorio-monitor-1", "escritorio", "Monitor 1", "Monitor", "Escolhido", {
+    brand: "Samsung",
+    productCode: "LS24AG320NLXZD",
+    voltage: "127V",
+    productUrl: "https://www.samsung.com/br/support/model/LS24AG320NLXZD/",
+    needsElectrical: true,
+  }),
+  item("escritorio-monitor-2", "escritorio", "Monitor 2", "Monitor", "Escolhido", {
+    brand: "Samsung",
+    model: "Odyssey G4 G40B 25 polegadas",
+    productCode: "LS25BG400ELXZD",
+    voltage: "127V",
+    productUrl: "https://www.samsung.com/br/monitors/gaming/odyssey-g4-g40b-25-inch-ls25bg400elxzd/",
+    needsElectrical: true,
+  }),
+  item("escritorio-monitor-3", "escritorio", "Monitor 3", "Monitor", "Escolhido", {
+    voltage: "127V",
+    needsElectrical: true,
+  }),
+  item("escritorio-braco-duplo", "escritorio", "Braço articulado para 2 monitores", "Suporte para monitor", "Escolhido", {
+    model: "Pichau Serpens 200 Pro RGB, pistão a gás, 17 a 35 polegadas",
+    productCode: "PG-SRP200PRO-RGB01",
+    finish: "Preto e branco",
+    productUrl: "https://www.pichau.com.br/suporte-articulado-para-dois-monitores-pichau-serpens-200-pro-rgb-pistao-a-gas-17-pol-a-35-pol-preto-e-branco-pg-srp200pro-rgb01",
+  }),
+  item("escritorio-braco-simples", "escritorio", "Braço articulado para 1 monitor", "Suporte para monitor", "Escolhido", {
+    model: "Pichau Serpens RGB, pistão a gás, 17 a 49 polegadas",
+    productCode: "PG-SRPNS-RGB01",
+    finish: "Preto e branco",
+    productUrl: "https://www.pichau.com.br/suporte-articulado-com-pistao-a-gas-para-monitor-pichau-serpens-17-pol-a-49-pol-rgb-preto-e-branco-pg-srpns-rgb01",
+  }),
+
+  // Área gourmet
+  item("gourmet-cuba", "gourmet", "Cuba churrasqueira", "Cuba", "Escolhido", {
+    model: "Quadratino Gourmet 1100",
+    productUrl: "https://debacco.com.br/produto/cuba-quadratino-gourmet-1100/",
+    notes: "Disponível na lista fornecida pela Laise.",
+    needsPlumbing: true,
+    needsCutout: true,
+  }),
+  item("gourmet-adega", "gourmet", "Adega", "Adega", "Escolhido", {
+    brand: "De Bacco",
+    model: "Disponível na lista fornecida pela Laise",
+    dimensions: "595 × 825 × 585 mm",
+    voltage: "220V",
+    productUrl: "https://debacco.com.br/produto/beer-center-145-esquerda/",
+    needsElectrical: true,
+    needsCutout: true,
+  }),
+  item("gourmet-cervejeira", "gourmet", "Cervejeira", "Cervejeira", "Escolhido", {
+    brand: "De Bacco",
+    model: "Disponível na lista fornecida pela Laise",
+    voltage: "220V",
+    productUrl: "https://debacco.com.br/produto/adega-31-garrafas/",
+    needsElectrical: true,
+    needsCutout: true,
+  }),
+  item("gourmet-torneira", "gourmet", "Torneira", "Torneira", "Escolhido", {
+    model: "Misturador com ímã monocomando Grey",
+    productUrl: "https://debacco.com.br/produto/misturador-com-ima-monocomando-grey/",
+    notes: "Disponível na lista fornecida pela Laise.",
+    needsPlumbing: true,
+  }),
+];
+
+export const seedData: AppData = {
+  environments: seedEnvironments,
+  items: seedItems,
+};
+
+export const emptyProjectData: AppData = {
+  environments: [
+    { id: "cozinha", name: "Cozinha", description: "Eletros e metais da cozinha", icon: "kitchen", color: "#C96A43", createdAt: now },
+    { id: "gourmet", name: "Área gourmet", description: "Itens da área gourmet", icon: "gourmet", color: "#6F8F84", createdAt: now },
+    { id: "lavanderia", name: "Lavanderia", description: "Equipamentos da lavanderia", icon: "laundry", color: "#6B84A8", createdAt: now },
+    { id: "sala", name: "Sala", description: "Eletrônicos e itens da sala", icon: "living", color: "#B08A5B", createdAt: now },
+    { id: "suite", name: "Suíte", description: "Itens da suíte", icon: "bedroom", color: "#A16F78", createdAt: now },
+  ],
+  items: [],
+};
