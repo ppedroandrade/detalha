@@ -12,7 +12,10 @@
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "db:migrate": "tsx scripts/migrate.ts",
     "provision": "tsx scripts/provision.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "agents:check": "node scripts/ai-orchestrator.mjs --check",
+    "agents:auto": "node scripts/ai-orchestrator.mjs",
+    "agents:reset": "node scripts/ai-orchestrator.mjs --reset"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",

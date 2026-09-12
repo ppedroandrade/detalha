@@ -11,3 +11,7 @@ ap1806-tour/
 *.tsbuildinfo
 test-results/
 playwright-report/
+
+.ai-orchestrator/state.json
+.ai-orchestrator/lock
+.ai-orchestrator/logs/
