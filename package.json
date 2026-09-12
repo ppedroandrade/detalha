@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "agents:check": "node scripts/ai-orchestrator.mjs --check",
+    "agents:auto": "node scripts/ai-orchestrator.mjs",
+    "agents:reset": "node scripts/ai-orchestrator.mjs --reset"
   },
   "dependencies": {
     "clsx": "^2.1.1",

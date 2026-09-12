@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "status": "idle",
+  "cycle": 0,
+  "nextAgent": "codex",
+  "lastAgent": null,
+  "lastExitCode": null,
+  "lastMarker": null,
+  "branch": null,
+  "startedAt": null,
+  "updatedAt": null
+}
