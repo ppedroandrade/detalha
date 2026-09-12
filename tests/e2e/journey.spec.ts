@@ -1,0 +1,28 @@
+import { test, expect } from '@playwright/test';
+import { syntheticPdf, syntheticPng } from '../fixtures/documents';
+test('cadastro, itens persistentes, upload múltiplo, histórico e demonstração',async({page})=>{
+  await page.goto('/');await page.getByRole('button',{name:'Criar conta local'}).click();
+  await page.getByLabel('Seu nome').fill('Administrador fictício');await page.getByLabel('Organização',{exact:true}).fill('Empresa fictícia');
+  await page.getByLabel('E-mail',{exact:true}).fill('e2e@example.invalid');await page.getByLabel('Senha',{exact:true}).fill('senha-local-1234');
+  await page.getByRole('button',{name:'Criar e entrar'}).click();await expect(page.getByRole('heading',{name:'Clientes e projetos'})).toBeVisible();
+  await page.getByRole('button',{name:'Cadastrar cliente'}).click();
+  await page.getByPlaceholder('Ex.: Ana e Bruno').fill('Cliente fictício');await page.getByPlaceholder('cliente@email.com').fill('cliente-e2e@example.invalid');
+  await page.getByPlaceholder('Mínimo de 12 caracteres').fill('senha-local-1234');await page.getByPlaceholder('Ex.: Apartamento Ana e Bruno').fill('Projeto fictício');
+  await page.getByRole('button',{name:'Criar acesso'}).click();await page.getByRole('button',{name:'Abrir projeto',exact:true}).click();
+  await page.getByRole('button',{name:'Criar ambiente'}).click();await page.getByPlaceholder('Ex.: Cozinha').fill('Sala fictícia');await page.getByRole('button',{name:'Salvar ambiente'}).click();
+  await expect(page.getByRole('heading',{name:'Sala fictícia'})).toBeVisible();
+  await expect(page.getByRole('status').filter({hasText:'Dados persistidos no servidor'})).toBeVisible();
+  await page.getByRole('button',{name:'Arquivos',exact:true}).click();
+  await page.getByLabel('Enviar documentos').setInputFiles([{name:'planta-ficticia.pdf',mimeType:'application/pdf',buffer:syntheticPdf()},{name:'imagem-ficticia.png',mimeType:'image/png',buffer:syntheticPng}]);
+  await expect(page.getByRole('heading',{name:'planta-ficticia.pdf v1'})).toBeVisible();await expect(page.getByRole('heading',{name:'imagem-ficticia.png v1'})).toBeVisible();
+  await page.getByLabel('Classificação de planta-ficticia.pdf v1',{exact:true}).selectOption('planta');
+  await expect(page.getByLabel('Substituir planta-ficticia.pdf v1',{exact:true})).toBeEnabled();
+  await page.getByLabel('Substituir planta-ficticia.pdf v1',{exact:true}).setInputFiles({name:'planta-ficticia.pdf',mimeType:'application/pdf',buffer:syntheticPdf()});
+  await expect(page.getByRole('heading',{name:'planta-ficticia.pdf v2'})).toBeVisible();
+  const article=page.locator('article').filter({has:page.getByRole('heading',{name:'planta-ficticia.pdf v2'})});
+  await article.getByRole('button',{name:'Visualizar'}).click();await expect(page.locator('iframe')).toBeVisible();await page.getByRole('button',{name:'Fechar',exact:true}).click();
+  await page.screenshot({path:'test-results/arquivos-desktop.png',fullPage:true});
+  await page.reload();await page.getByRole('button',{name:'Abrir projeto',exact:true}).click();await expect(page.getByRole('heading',{name:'Sala fictícia'})).toBeVisible();
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'test-results/projeto-mobile.png',fullPage:true});
+  await page.goto('/demo');await page.getByRole('button',{name:'Entrar no sistema'}).click();await expect(page.getByText('Apartamento fictício').first()).toBeVisible();
+});

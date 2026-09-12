@@ -15,12 +15,14 @@ import { exportToExcel } from "@/lib/export-excel";
 import type { ApartmentItem, ClientProject, Environment, EnvironmentIcon, ItemStatus, PlatformUser } from "@/lib/types";
 import { ITEM_STATUSES } from "@/lib/types";
 import { cn, initials } from "@/lib/utils";
+import { ProjectDocuments } from "./project-documents";
+import { documentMessages } from "@/lib/i18n/documents";
 import { EnvironmentForm } from "./environment-form";
 import { ItemForm } from "./item-form";
 import { Button } from "./ui/button";
 import { Input, Select } from "./ui/fields";
 
-type View = "dashboard" | "environment" | "team";
+type View = "dashboard" | "environment" | "team" | "files" | "intelligence" | "validation" | "tour";
 
 const iconMap: Record<EnvironmentIcon, typeof Home> = {
   kitchen: Refrigerator,
@@ -95,6 +97,7 @@ export function ApartmentApp({
         onClose={() => setSidebarOpen(false)}
         onDashboard={() => { setView("dashboard"); setSidebarOpen(false); }}
         onTeam={() => { setView("team"); setSidebarOpen(false); }}
+        onDocuments={next => { setView(next); setSidebarOpen(false); }}
         onEnvironment={openEnvironment}
         onNewEnvironment={() => { setEditingEnvironment(null); setEnvironmentFormOpen(true); setSidebarOpen(false); }}
         user={user}
@@ -105,7 +108,7 @@ export function ApartmentApp({
 
       <div className="lg:pl-[280px]">
         <Topbar
-          title={view === "dashboard" ? "Visão geral" : view === "team" ? "Visualização para equipe" : selectedEnvironment?.name ?? "Ambiente"}
+          title={view === "files" ? "Arquivos" : view === "intelligence" ? "Leitura IA" : view === "validation" ? "Validação" : view === "tour" ? "Tour 3D" : view === "dashboard" ? "Visão geral" : view === "team" ? "Visualização para equipe" : selectedEnvironment?.name ?? "Ambiente"}
           onMenu={() => setSidebarOpen(true)}
           onExport={handleExport}
           onNewItem={() => openNewItem()}
@@ -146,6 +149,9 @@ export function ApartmentApp({
               }}
             />
           )}
+          {["files", "intelligence", "validation", "tour"].includes(view) && !persistent && <p className="surface-card rounded-xl p-6">Documentos privados estão disponíveis na área persistente. A demonstração mantém os dados deste navegador.</p>}
+          {persistent && view === "files" && <ProjectDocuments projectId={project.id} canEdit={user.role === "admin"} />}
+          {persistent && ["intelligence", "validation", "tour"].includes(view) && <p className="surface-card rounded-xl p-6">{documentMessages.pt.pending} A modelagem exige medidas confirmadas e revisão humana.</p>}
           {view === "team" && <TeamView environments={store.data.environments} items={store.data.items} />}
         </main>
       </div>
@@ -169,8 +175,9 @@ export function ApartmentApp({
   );
 }
 
-function Sidebar({ open, environments, selectedId, currentView, onClose, onDashboard, onTeam, onEnvironment, onNewEnvironment, user, project, onLogout, onBackToAdmin }: {
+function Sidebar({ open, environments, selectedId, currentView, onClose, onDashboard, onTeam, onDocuments, onEnvironment, onNewEnvironment, user, project, onLogout, onBackToAdmin }: {
   open: boolean; environments: Environment[]; selectedId: string; currentView: View; onClose: () => void;
+  onDocuments: (view: "files" | "intelligence" | "validation" | "tour") => void;
   onDashboard: () => void; onTeam: () => void; onEnvironment: (id: string) => void; onNewEnvironment: () => void;
   user: PlatformUser; project: ClientProject; onLogout: () => void; onBackToAdmin?: () => void;
 }) {
@@ -189,6 +196,7 @@ function Sidebar({ open, environments, selectedId, currentView, onClose, onDashb
           <p className="mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-white/30">Principal</p>
           {onBackToAdmin && <NavButton active={false} icon={ArrowLeft} label="Voltar aos projetos" onClick={onBackToAdmin} />}
           <NavButton active={currentView === "dashboard"} icon={LayoutDashboard} label="Visão geral" onClick={onDashboard} />
+          {(["files", "intelligence", "validation", "tour"] as const).map(section => <NavButton key={section} active={currentView === section} icon={FileText} label={documentMessages.pt[section]} onClick={() => onDocuments(section)} />)}
           <NavButton active={currentView === "team"} icon={Boxes} label="Visualização para equipe" onClick={onTeam} />
           <div className="mb-2 mt-7 flex items-center justify-between px-3">
             <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30">Ambientes</p>

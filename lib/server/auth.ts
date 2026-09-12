@@ -7,7 +7,7 @@ import { clientSchema, loginSchema, registrationSchema } from '../domain/schemas
 import { asActor, type Database, type Sql } from './database';
 
 const scrypt = promisify(scryptCallback);
-export const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
+export const hashToken = (token: string | Buffer) => createHash('sha256').update(token).digest('hex');
 export async function hashPassword(password: string) {
   const salt = randomBytes(16).toString('hex');
   const key = await scrypt(password,salt,64) as Buffer;

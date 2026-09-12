@@ -32,3 +32,11 @@ Migrações `db/migrations/*.up.sql` são versionadas e transacionais; cada uma 
 ## Limitações desta entrega
 
 O adaptador local não substitui a validação de PostgreSQL/Supabase hospedados. O repositório não contém credenciais externas. Documentação das próximas etapas e resultados das verificações: `docs/ENTREGA_IA_3D.md`.
+
+## Arquivos privados
+
+Dentro do projeto, abra **Arquivos**. Envie vários PDFs/PNG/JPEG, classifique-os e selecione as versões que participarão da análise. Substituir cria outra versão; arquivar oculta a versão da próxima análise sem apagar histórico. Clientes podem visualizar; administradores/projetistas podem enviar e corrigir. O envio é transmitido pela API, que limita a leitura do corpo antes de persistir. Assinatura, extensão e MIME são conferidos; validação completa do documento ocorre no processamento.
+
+`MAX_FILE_BYTES`, `MAX_ORGANIZATION_BYTES` e `MAX_PROJECT_FILES` limitam consumo. A cota inclui versões arquivadas, pois continuam ocupando disco. Download é autenticado, vinculado ao usuário e expira em até 5 minutos (60 segundos por padrão). Não há bucket público. Expurgo físico e retenção automática ainda não implementados; `ARCHIVED_RETENTION_DAYS` reserva a configuração, sem deletar arquivos silenciosamente.
+
+`npm run test:e2e` executa a jornada no Chromium com banco sintético isolado (primeiro execute `npx playwright install chromium` e `npm run build`). Inclui cadastro, persistência, arquivos múltiplos, substituição, preview, viewport móvel e demonstração. Capturas ficam em `test-results/`, fora do Git.
