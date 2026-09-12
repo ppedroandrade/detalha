@@ -5,3 +5,9 @@ out
 *.log
 .env*
 !.env.example
+
+ap1806-tour/
+.detalha/
+*.tsbuildinfo
+test-results/
+playwright-report/
