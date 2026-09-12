@@ -4,7 +4,7 @@ import { emptyProjectData, seedData } from "./seed";
 const PROJECT_PREFIX = "marcenaria-projeto-v1";
 const PLATFORM_KEY = "marcenaria-platform-v1";
 const SESSION_KEY = "marcenaria-session-v1";
-export const GABY_PROJECT_ID = "projeto-gaby";
+export const DEMO_PROJECT_ID = "projeto-demo";
 
 export interface DataRepository {
   load(projectId: string): AppData;
@@ -16,12 +16,12 @@ export const localStorageRepository: DataRepository = {
   load(projectId) {
     if (typeof window === "undefined") return seedData;
     const stored = window.localStorage.getItem(`${PROJECT_PREFIX}:${projectId}`);
-    if (!stored) return projectId === GABY_PROJECT_ID ? seedData : emptyProjectData;
+    if (!stored) return projectId === DEMO_PROJECT_ID ? seedData : emptyProjectData;
 
     try {
       return JSON.parse(stored) as AppData;
     } catch {
-      return projectId === GABY_PROJECT_ID ? seedData : emptyProjectData;
+      return projectId === DEMO_PROJECT_ID ? seedData : emptyProjectData;
     }
   },
   save(projectId, data) {
@@ -46,17 +46,17 @@ export const initialPlatformData: PlatformData = {
     {
       id: "user-admin",
       name: "Administrador Marcenaria",
-      email: "admin@morada.com",
-      password: "admin123",
+      email: "admin@example.invalid",
+      passwordHash: "60a702a5cf5f8d1310dc9447a0b1d689dc1c1f98c2acadd4b2a6d653c084f342",
       role: "admin",
       active: true,
       createdAt,
     },
     {
-      id: "user-gaby",
-      name: "Gaby",
-      email: "gaby@morada.com",
-      password: "gaby123",
+      id: "user-demo",
+      name: "Cliente demonstração",
+      email: "cliente@example.invalid",
+      passwordHash: "e84ce7e669a6562671b1247ea6d35f2fc6725533150698132befd70ed86b1b83",
       role: "client",
       active: true,
       createdAt,
@@ -64,9 +64,9 @@ export const initialPlatformData: PlatformData = {
   ],
   projects: [
     {
-      id: GABY_PROJECT_ID,
-      name: "Apartamento Gaby",
-      clientId: "user-gaby",
+      id: DEMO_PROJECT_ID,
+      name: "Apartamento fictício",
+      clientId: "user-demo",
       status: "Coleta de dados",
       createdAt,
     },

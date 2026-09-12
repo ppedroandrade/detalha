@@ -1,0 +1,66 @@
+CREATE ROLE detalha_app NOLOGIN;
+CREATE TABLE app_users (id text PRIMARY KEY, name text NOT NULL, email text NOT NULL UNIQUE, password_hash text, active boolean NOT NULL DEFAULT true, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE organizations (id text PRIMARY KEY, name text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE organization_members (organization_id text NOT NULL REFERENCES organizations, user_id text NOT NULL REFERENCES app_users, role text NOT NULL CHECK(role IN ('admin','designer','client')), PRIMARY KEY(organization_id,user_id));
+CREATE TABLE clients (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES organizations, user_id text NOT NULL REFERENCES app_users, name text NOT NULL, email text NOT NULL, UNIQUE(id,organization_id));
+CREATE TABLE projects (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES organizations, client_id text NOT NULL, name text NOT NULL, status text NOT NULL DEFAULT 'Coleta de arquivos' CHECK(status IN ('Coleta de arquivos','Processando documentos','Aguardando validação','Pronto para modelagem','Gerando 3D','Revisão do 3D','Publicado','Falha no processamento')), revision integer NOT NULL DEFAULT 0, created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(id,organization_id), FOREIGN KEY(client_id,organization_id) REFERENCES clients(id,organization_id));
+CREATE TABLE environments (id text NOT NULL, project_id text NOT NULL REFERENCES projects, data jsonb NOT NULL, PRIMARY KEY(project_id,id));
+CREATE TABLE apartment_items (id text NOT NULL, project_id text NOT NULL, environment_id text NOT NULL, data jsonb NOT NULL, PRIMARY KEY(project_id,id), FOREIGN KEY(project_id,environment_id) REFERENCES environments(project_id,id));
+CREATE TABLE sessions (token_hash text PRIMARY KEY, user_id text NOT NULL REFERENCES app_users, expires_at timestamptz NOT NULL);
+CREATE TABLE rate_limits (key text PRIMARY KEY, count integer NOT NULL, expires_at timestamptz NOT NULL);
+CREATE TABLE project_files (id text PRIMARY KEY, project_id text NOT NULL REFERENCES projects, classification text NOT NULL CHECK(classification IN ('planta','layout','corte','elevação','marcenaria','luminotécnico','acabamento','foto','memorial','outro')), created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(id,project_id));
+CREATE TABLE project_file_versions (id text PRIMARY KEY, file_id text NOT NULL, project_id text NOT NULL REFERENCES projects, version integer NOT NULL CHECK(version>0), name text NOT NULL, mime text NOT NULL CHECK(mime IN ('application/pdf','image/png','image/jpeg')), size bigint NOT NULL CHECK(size>0), hash text NOT NULL, storage_key text NOT NULL UNIQUE, author_id text NOT NULL REFERENCES app_users, status text NOT NULL DEFAULT 'uploaded' CHECK(status IN ('uploaded','queued','processing','processed','needs_review','failed','archived')), selected boolean NOT NULL DEFAULT true, created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(file_id,version), UNIQUE(id,project_id), FOREIGN KEY(file_id,project_id) REFERENCES project_files(id,project_id));
+CREATE TABLE processing_runs (id text PRIMARY KEY, project_id text NOT NULL REFERENCES projects, requester_id text NOT NULL REFERENCES app_users, status text NOT NULL DEFAULT 'queued' CHECK(status IN ('queued','processing','needs_review','failed')), provider text NOT NULL, schema_version text NOT NULL DEFAULT '1', prompt_version text NOT NULL DEFAULT '1', model text, attempts integer NOT NULL DEFAULT 0, lease_token text, lease_until timestamptz, input_tokens integer NOT NULL DEFAULT 0, output_tokens integer NOT NULL DEFAULT 0, estimated_cost numeric NOT NULL DEFAULT 0, duration_ms integer, pages_processed integer NOT NULL DEFAULT 0, error_code text, result jsonb, created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz, UNIQUE(id,project_id));
+CREATE UNIQUE INDEX one_active_run ON processing_runs(project_id) WHERE status IN ('queued','processing');
+CREATE TABLE processing_inputs (run_id text NOT NULL, version_id text NOT NULL, project_id text NOT NULL, PRIMARY KEY(run_id,version_id), FOREIGN KEY(run_id,project_id) REFERENCES processing_runs(id,project_id), FOREIGN KEY(version_id,project_id) REFERENCES project_file_versions(id,project_id));
+CREATE TABLE audit_logs (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES organizations, project_id text REFERENCES projects, actor_id text NOT NULL REFERENCES app_users, action text NOT NULL, entity_id text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE download_grants (token_hash text PRIMARY KEY, version_id text NOT NULL REFERENCES project_file_versions, user_id text NOT NULL REFERENCES app_users, expires_at timestamptz NOT NULL);
+
+CREATE FUNCTION current_actor() RETURNS text LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id',true),'') $$;
+CREATE FUNCTION is_staff(org text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM organization_members m JOIN app_users u ON u.id=m.user_id WHERE m.organization_id=org AND m.user_id=current_actor() AND m.role IN ('admin','designer') AND u.active) $$;
+CREATE FUNCTION is_member(org text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM organization_members m JOIN app_users u ON u.id=m.user_id WHERE m.organization_id=org AND m.user_id=current_actor() AND u.active) $$;
+CREATE FUNCTION can_project(pid text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM projects p JOIN clients c ON c.id=p.client_id JOIN app_users u ON u.id=current_actor() WHERE p.id=pid AND u.active AND is_member(p.organization_id) AND (is_staff(p.organization_id) OR c.user_id=current_actor())) $$;
+CREATE FUNCTION staff_project(pid text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM projects p WHERE p.id=pid AND is_staff(p.organization_id)) $$;
+CREATE FUNCTION can_user(uid text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT uid=current_actor() OR EXISTS(SELECT 1 FROM organization_members m WHERE m.user_id=uid AND is_staff(m.organization_id)) $$;
+
+ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
+CREATE POLICY user_read ON app_users FOR SELECT USING(can_user(id));
+ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
+CREATE POLICY org_read ON organizations FOR SELECT USING(is_member(id));
+ALTER TABLE organization_members ENABLE ROW LEVEL SECURITY;
+CREATE POLICY member_read ON organization_members FOR SELECT USING(is_member(organization_id));
+ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
+CREATE POLICY client_read ON clients FOR SELECT USING(is_staff(organization_id) OR (user_id=current_actor() AND is_member(organization_id)));
+CREATE POLICY client_write ON clients FOR ALL USING(is_staff(organization_id)) WITH CHECK(is_staff(organization_id));
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY project_read ON projects FOR SELECT USING(can_project(id));
+CREATE POLICY project_write ON projects FOR ALL USING(is_staff(organization_id)) WITH CHECK(is_staff(organization_id));
+ALTER TABLE environments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY environment_access ON environments FOR ALL USING(can_project(project_id)) WITH CHECK(can_project(project_id));
+ALTER TABLE apartment_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY item_access ON apartment_items FOR ALL USING(can_project(project_id)) WITH CHECK(can_project(project_id));
+DO $$ DECLARE t text; BEGIN
+  FOREACH t IN ARRAY ARRAY['project_files','project_file_versions','processing_runs','processing_inputs'] LOOP
+    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY',t);
+    EXECUTE format('CREATE POLICY scoped_read ON %I FOR SELECT USING(can_project(project_id))',t);
+    EXECUTE format('CREATE POLICY scoped_write ON %I FOR ALL USING(staff_project(project_id)) WITH CHECK(staff_project(project_id))',t);
+  END LOOP;
+END $$;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY audit_read ON audit_logs FOR SELECT USING(is_staff(organization_id));
+CREATE POLICY audit_insert ON audit_logs FOR INSERT WITH CHECK(actor_id=current_actor() AND is_member(organization_id) AND (project_id IS NULL OR can_project(project_id)));
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE download_grants ENABLE ROW LEVEL SECURITY;
+GRANT USAGE ON SCHEMA public TO detalha_app;
+GRANT SELECT(id,name,email,active,created_at) ON app_users TO detalha_app;
+GRANT SELECT ON organizations,organization_members TO detalha_app;
+GRANT SELECT,INSERT,UPDATE,DELETE ON clients,projects,environments,apartment_items,project_files,project_file_versions,processing_runs,processing_inputs TO detalha_app;
+GRANT SELECT,INSERT ON audit_logs TO detalha_app;
+CREATE FUNCTION bump_project_revision(pid text, expected integer) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE n integer; BEGIN
+  IF NOT can_project(pid) THEN RAISE EXCEPTION 'forbidden'; END IF;
+  UPDATE projects SET revision=revision+1 WHERE id=pid AND revision=expected RETURNING revision INTO n;
+  RETURN n;
+END $$;
+REVOKE ALL ON FUNCTION bump_project_revision(text,integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION bump_project_revision(text,integer) TO detalha_app;

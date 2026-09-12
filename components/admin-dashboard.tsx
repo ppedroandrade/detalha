@@ -12,7 +12,7 @@ import { ClientForm } from "./client-form";
 import { Button } from "./ui/button";
 import { Input, Select } from "./ui/fields";
 
-const projectStatusStyles: Record<ProjectStatus, string> = {
+const projectStatusStyles: Partial<Record<ProjectStatus, string>> = {
   "Coleta de dados": "bg-amber-50 text-amber-700",
   "Em revisão": "bg-blue-50 text-blue-700",
   "Concluído": "bg-emerald-50 text-emerald-700",
@@ -20,6 +20,7 @@ const projectStatusStyles: Record<ProjectStatus, string> = {
 
 export function AdminDashboard({
   data,
+  persistent = false,
   admin,
   onOpenProject,
   onCreateClient,
@@ -28,9 +29,10 @@ export function AdminDashboard({
   onLogout,
 }: {
   data: PlatformData;
+  persistent?: boolean;
   admin: PlatformUser;
   onOpenProject: (project: ClientProject) => void;
-  onCreateClient: (values: { name: string; email: string; password: string; projectName: string }) => void;
+  onCreateClient: (values: { name: string; email: string; password: string; projectName: string }) => void | Promise<void>;
   onUpdateUser: (id: string, patch: Partial<PlatformUser>) => void;
   onUpdateProject: (id: string, patch: Partial<ClientProject>) => void;
   onLogout: () => void;
@@ -98,7 +100,7 @@ export function AdminDashboard({
                     <tr key={project.id} className="border-b border-slate-100 transition last:border-0 hover:bg-sage/[0.035]">
                       <td className="px-6 py-5"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-full bg-sage-soft text-xs font-bold text-sage-dark">{client.name.slice(0, 2).toUpperCase()}</div><div><p className="text-sm font-semibold text-ink">{client.name}</p><p className="text-xs text-slate-400">{client.email}</p></div></div></td>
                       <td className="px-4 py-5"><p className="text-sm font-semibold text-ink">{project.name}</p><p className="mt-1 text-xs text-slate-400">Criado em {new Date(project.createdAt).toLocaleDateString("pt-BR")}</p></td>
-                      <td className="px-4 py-5"><Select value={project.status} onChange={(event) => onUpdateProject(project.id, { status: event.target.value as ProjectStatus })} className={cn("h-9 w-40 border-0 text-xs font-bold", projectStatusStyles[project.status])}><option>Coleta de dados</option><option>Em revisão</option><option>Concluído</option></Select></td>
+                      <td className="px-4 py-5"><Select disabled={persistent} value={project.status} onChange={(event) => onUpdateProject(project.id, { status: event.target.value as ProjectStatus })} className={cn("h-9 w-40 border-0 text-xs font-bold", projectStatusStyles[project.status])}>{persistent && <option>{project.status}</option>}<option>Coleta de dados</option><option>Em revisão</option><option>Concluído</option></Select></td>
                       <td className="px-4 py-5"><button onClick={() => { onUpdateUser(client.id, { active: !client.active }); toast.success(client.active ? "Acesso do cliente bloqueado." : "Acesso do cliente liberado."); }} className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold", client.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500")}><CircleDot className="h-3 w-3" />{client.active ? "Ativo" : "Bloqueado"}</button></td>
                       <td className="px-4 py-5"><Button variant="ghost" size="icon" className="rounded-full" onClick={() => onOpenProject(project)} aria-label="Abrir projeto"><ArrowRight className="h-4 w-4" /></Button></td>
                     </tr>
@@ -122,8 +124,8 @@ export function AdminDashboard({
         open={formOpen}
         onClose={() => setFormOpen(false)}
         existingEmails={data.users.map((user) => user.email)}
-        onCreate={(values) => {
-          onCreateClient(values);
+        onCreate={async (values) => {
+          await onCreateClient(values);
           toast.success("Cliente e projeto criados.");
         }}
       />

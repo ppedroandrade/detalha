@@ -18,6 +18,7 @@ export type EnvironmentIcon =
   | "home";
 
 export interface Environment {
+  extractedRoomId?: string;
   id: string;
   name: string;
   description: string;
@@ -27,6 +28,8 @@ export interface Environment {
 }
 
 export interface ApartmentItem {
+  sceneObjectId?: string;
+  structuredDimensions?: { width?: import("./domain/schemas").ExtractedFact; height?: import("./domain/schemas").ExtractedFact; depth?: import("./domain/schemas").ExtractedFact; };
   id: string;
   environmentId: string;
   name: string;
@@ -63,15 +66,18 @@ export interface PlatformUser {
   id: string;
   name: string;
   email: string;
-  password: string;
+  /** Somente demonstração legada; nunca retornado pelo servidor. */
+  password?: string;
+  passwordHash?: string;
   role: UserRole;
   active: boolean;
   createdAt: string;
 }
 
-export type ProjectStatus = "Coleta de dados" | "Em revisão" | "Concluído";
+export type ProjectStatus = "Coleta de dados" | "Em revisão" | "Concluído" | import("./domain/schemas").ProjectState;
 
 export interface ClientProject {
+  organizationId?: string;
   id: string;
   name: string;
   clientId: string;

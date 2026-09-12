@@ -162,11 +162,11 @@ Cada cliente recebe um acesso individual para preencher seu apartamento. A marce
 - Login de cliente e administrador.
 - Separação visual entre painel administrativo e projeto do cliente.
 - Cadastro local de clientes e projetos.
-- Acesso do administrador ao apartamento da Gaby.
+- Acesso do administrador ao apartamento demonstrativo.
 - Bloqueio e liberação de usuários.
 - Status do projeto.
 - Cadastro de ambientes e itens.
-- Dados importados da planilha do apartamento da Gaby.
+- Dados fictícios de demonstração.
 - Visualização técnica para a equipe.
 - Exportação Excel.
 - Layout responsivo.

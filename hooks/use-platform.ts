@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { localStorageRepository, platformRepository } from "@/lib/storage";
 import type { ClientProject, PlatformData, PlatformUser } from "@/lib/types";
+import { demoPasswordHash } from "@/lib/demo-password";
 import { uid } from "@/lib/utils";
 
 export function usePlatform() {
@@ -11,9 +12,13 @@ export function usePlatform() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setData(platformRepository.load());
+    const loaded = platformRepository.load();
+    Promise.all(loaded.users.map(async user => {
+      if (!user.password) return user;
+      const { password, ...safe } = user;
+      return { ...safe, passwordHash: await demoPasswordHash(password,user.id) };
+    })).then(users => { setData({...loaded,users}); setHydrated(true); });
     setSessionUserId(platformRepository.loadSession()?.userId ?? "");
-    setHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -26,15 +31,14 @@ export function usePlatform() {
   );
 
   const login = useCallback(
-    (email: string, password: string) => {
+    async (email: string, password: string) => {
       const normalizedEmail = email.trim().toLowerCase();
       const user = data.users.find(
         (entry) =>
           entry.active &&
-          entry.email.toLowerCase() === normalizedEmail &&
-          entry.password === password,
+          entry.email.toLowerCase() === normalizedEmail,
       );
-      if (!user) return false;
+      if (!user || (user.passwordHash ? user.passwordHash !== await demoPasswordHash(password,user.id) : user.password !== password)) return false;
       setSessionUserId(user.id);
       platformRepository.saveSession({ userId: user.id });
       return true;
@@ -48,13 +52,14 @@ export function usePlatform() {
   }, []);
 
   const createClient = useCallback(
-    (values: { name: string; email: string; password: string; projectName: string }) => {
+    async (values: { name: string; email: string; password: string; projectName: string }) => {
       const timestamp = new Date().toISOString();
+      const userId = uid("user");
       const user: PlatformUser = {
-        id: uid("user"),
+        id: userId,
         name: values.name.trim(),
         email: values.email.trim().toLowerCase(),
-        password: values.password,
+        passwordHash: await demoPasswordHash(values.password,userId),
         role: "client",
         active: true,
         createdAt: timestamp,

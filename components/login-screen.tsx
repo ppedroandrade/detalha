@@ -9,24 +9,24 @@ import { Input, Label } from "./ui/fields";
 export function LoginScreen({
   onLogin,
 }: {
-  onLogin: (email: string, password: string) => boolean;
+  onLogin: (email: string, password: string) => Promise<boolean>;
 }) {
-  const [email, setEmail] = useState("gaby@morada.com");
-  const [password, setPassword] = useState("gaby123");
+  const [email, setEmail] = useState("cliente@example.invalid");
+  const [password, setPassword] = useState("demo123");
   const [showPassword, setShowPassword] = useState(false);
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!onLogin(email, password)) toast.error("E-mail ou senha inválidos.");
+    if (!await onLogin(email, password)) toast.error("E-mail ou senha inválidos.");
   };
 
   const selectDemo = (type: "client" | "admin") => {
     if (type === "admin") {
-      setEmail("admin@morada.com");
+      setEmail("admin@example.invalid");
       setPassword("admin123");
     } else {
-      setEmail("gaby@morada.com");
-      setPassword("gaby123");
+      setEmail("cliente@example.invalid");
+      setPassword("demo123");
     }
   };
 
@@ -78,7 +78,7 @@ export function LoginScreen({
 
           <div className="my-6 flex items-center gap-3"><div className="h-px flex-1 bg-slate-200" /><span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Preencher acesso</span><div className="h-px flex-1 bg-slate-200" /></div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <button onClick={() => selectDemo("client")} className="group surface-card rounded-2xl p-4 text-left transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lift"><div className="grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand"><LockKeyhole className="h-4 w-4" /></div><p className="mt-3 text-sm font-bold">Cliente Gaby</p><p className="mt-1 text-[11px] leading-4 text-slate-400">Edita o próprio apartamento</p></button>
+            <button onClick={() => selectDemo("client")} className="group surface-card rounded-2xl p-4 text-left transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lift"><div className="grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand"><LockKeyhole className="h-4 w-4" /></div><p className="mt-3 text-sm font-bold">Cliente demonstração</p><p className="mt-1 text-[11px] leading-4 text-slate-400">Edita o próprio apartamento</p></button>
             <button onClick={() => selectDemo("admin")} className="group surface-card rounded-2xl p-4 text-left transition hover:-translate-y-0.5 hover:border-sage/50 hover:shadow-lift"><div className="grid h-8 w-8 place-items-center rounded-lg bg-sage-soft text-sage-dark"><Users className="h-4 w-4" /></div><p className="mt-3 text-sm font-bold">Administrador</p><p className="mt-1 text-[11px] leading-4 text-slate-400">Gerencia clientes e projetos</p></button>
           </div>
         </div>

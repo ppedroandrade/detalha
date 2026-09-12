@@ -25,7 +25,7 @@ export function PlatformApp() {
         data={platform.data}
         admin={platform.currentUser}
         onOpenProject={setAdminProject}
-        onCreateClient={platform.createClient}
+        onCreateClient={async values => { await platform.createClient(values); }}
         onUpdateUser={platform.updateUser}
         onUpdateProject={platform.updateProject}
         onLogout={platform.logout}

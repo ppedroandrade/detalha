@@ -42,16 +42,18 @@ const statusStyles: Record<ItemStatus, string> = {
 
 export function ApartmentApp({
   project,
+  persistent = false,
   user,
   onLogout,
   onBackToAdmin,
 }: {
   project: ClientProject;
+  persistent?: boolean;
   user: PlatformUser;
   onLogout: () => void;
   onBackToAdmin?: () => void;
 }) {
-  const store = useApartmentData(project.id);
+  const store = useApartmentData(project.id, persistent);
   const [view, setView] = useState<View>("dashboard");
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState("");
   const [itemFormOpen, setItemFormOpen] = useState(false);
@@ -80,7 +82,7 @@ export function ApartmentApp({
   };
 
   if (!store.hydrated) {
-    return <div className="flex min-h-screen items-center justify-center bg-canvas text-sm font-medium text-slate-500">Organizando seu apartamento...</div>;
+    return <div className="p-8">{store.persistenceError || "Organizando seu apartamento…"}<button className="ml-4 underline" onClick={onBackToAdmin}>Voltar</button></div>;
   }
 
   return (
@@ -111,6 +113,7 @@ export function ApartmentApp({
           onLogout={onLogout}
         />
         <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-7 sm:py-8 lg:px-10">
+          {persistent && <p role="status" className="mb-4 rounded-xl bg-sage-soft p-3 text-sm">{store.persistenceError || (store.saving ? "Salvando alterações no servidor…" : "Dados persistidos no servidor")}</p>}
           {view === "dashboard" && (
             <DashboardView
               environments={store.data.environments}

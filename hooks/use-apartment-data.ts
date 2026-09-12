@@ -1,22 +1,46 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { localStorageRepository } from "@/lib/storage";
 import type { ApartmentItem, AppData, Environment } from "@/lib/types";
+import { api } from "@/lib/api-client";
 import { uid } from "@/lib/utils";
 
-export function useApartmentData(projectId: string) {
+export function useApartmentData(projectId: string, persistent = false) {
   const [data, setData] = useState<AppData>({ environments: [], items: [] });
   const [hydrated, setHydrated] = useState(false);
 
+  const [saving, setSaving] = useState(false);
+  const [persistenceError, setPersistenceError] = useState("");
+  const revision = useRef(0), baseline = useRef<AppData | null>(null);
+  const queue = useRef(Promise.resolve()), failed = useRef(false);
   useEffect(() => {
-    setData(localStorageRepository.load(projectId));
-    setHydrated(true);
-  }, [projectId]);
-
+    let active = true;
+    if (!persistent) { const value = localStorageRepository.load(projectId); baseline.current=value; setData(value); setHydrated(true); return; }
+    api<{data:AppData;revision:number}>(`/api/projects/${projectId}/data`).then(value => {
+      if (!active) return;
+      revision.current=value.revision; baseline.current=value.data; setData(value.data); setHydrated(true);
+    }).catch(e => { if(active) setPersistenceError(e.message); });
+    return () => { active=false; };
+  }, [projectId, persistent]);
   useEffect(() => {
-    if (hydrated) localStorageRepository.save(projectId, data);
-  }, [data, hydrated, projectId]);
+    if (!hydrated || data === baseline.current) return;
+    if (!persistent) { localStorageRepository.save(projectId,data); return; }
+    baseline.current=data;
+    setSaving(true);
+    queue.current=queue.current.then(async () => {
+      if(failed.current) return;
+      try {
+        const value=await api<{revision:number}>(`/api/projects/${projectId}/data`,'PUT',{data,revision:revision.current});
+        revision.current=value.revision; setPersistenceError("");
+      } catch(e) { failed.current=true; setPersistenceError((e as Error).message + " As alterações não foram salvas. Mantenha esta tela aberta e copie o trabalho antes de recarregar."); }
+    }).finally(()=>setSaving(false));
+  }, [data, hydrated, projectId, persistent]);
+  useEffect(() => {
+    const handler=(event:BeforeUnloadEvent)=>{ if(saving || persistenceError) { event.preventDefault(); } };
+    window.addEventListener('beforeunload',handler);
+    return ()=>window.removeEventListener('beforeunload',handler);
+  },[saving,persistenceError]);
 
   const addEnvironment = useCallback(
     (environment: Omit<Environment, "id" | "createdAt">) => {
@@ -129,6 +153,8 @@ export function useApartmentData(projectId: string) {
   return {
     data,
     hydrated,
+    saving,
+    persistenceError,
     stats,
     addEnvironment,
     updateEnvironment,
