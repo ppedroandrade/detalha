@@ -2,6 +2,9 @@ node_modules
 .next
 out
 .DS_Store
+*.log
+.env*
+!.env.example
 .ai-orchestrator/state.json
 .ai-orchestrator/lock
 .ai-orchestrator/logs/
